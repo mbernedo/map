@@ -19,56 +19,63 @@
         </style>
 </head>
 
-<body style="background-color: black; margin-top: 2%; margin: 0;">
-    <div id="map"></div>
+<body style=" margin-top: 2%; margin: 0;">
+            <ul id="puntos">
+            </ul>
+            <div id="map"></div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-
         </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
         crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script src="https://kit.fontawesome.com/1b0ba374a4.js" crossorigin="anonymous"></script>
     <script>
-        let map;
-        function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: -12.190633, lng: -76.997915 },
+        const config = {
+            apiKey: "AIzaSyBozxJl4RZ7eSnIVL06SskTTyBA00RqmN0",
+            authDomain: "miguel-project-275306.firebaseapp.com",
+            databaseURL: "https://miguel-project-275306.firebaseio.com",
+            projectId: "miguel-project-275306",
+            storageBucket: "miguel-project-275306.appspot.com",
+            messagingSenderId: "1096936205557",
+            appId: "1:1096936205557:web:500c00df88bdc9e751e9bc"
+        };
+        firebase.initializeApp(config);
+        const database = firebase.database();
+        const mapRef = database.ref('/').orderByChild('page').equalTo(3);
+        let map
+        let cont = 0
+        let sumLat = 0
+        let sumLon = 0
+        let coord = []
+        mapRef.on('value', async function(snapshot) {
+            for(const obj in snapshot.val()){
+                const map = snapshot.val()[obj]
+                $("#puntos").append(`<li>${map.title}:${map.description}/latitud:${map.lat},longitud:${map.lon}</li>`)
+                cont++
+                sumLat+=map.lat
+                sumLon+=map.lon
+                objCoord = {lat: map.lat, lon: map.lon}
+                coord.push(objCoord)
+            }
+            map =await new google.maps.Map(document.getElementById("map"), {
+                center: { lat: sumLat/cont, lng: sumLon/cont },
                 zoom: 12
             });
-            const marker1 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.180633, -76.997915),
-                map: map
-            });
-            const marker2 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.190633, -76.987915),
-                map: map
-            });
-            const marker3 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.180633, -76.987915),
-                map: map
-            });
-            const marker4 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.195433, -76.997915),
-                map: map
-            });
-            const marker5 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.195633, -76.998956),
-                map: map
-            });
-            const marker6 = new google.maps.Marker({
-                position: new google.maps.LatLng(-12.200633, -76.987915),
-                map: map
-            });
-        }
+            for(const obj of coord){
+                const mark = new google.maps.Marker({
+                    position: new google.maps.LatLng(obj.lat, obj.lon),
+                    map: map
+                })
+            }
+        });
     </script>
     <script defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBozxJl4RZ7eSnIVL06SskTTyBA00RqmN0&callback=initMap">
-  </script>
-        
+    </script>
 </body>
-
 </html>
